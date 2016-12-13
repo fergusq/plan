@@ -324,6 +324,16 @@ function interpret(scope) {
 	done
 }
 
+function reverse(l) {
+	a := []
+	i := #l
+	while [ i > 0 ] do
+		i --
+		a += l[i]
+	done
+	return a
+}
+
 function retrieveVar(scope, chain) {
 	current_val = scope
 	while [ #chain > 0 ] do
@@ -342,6 +352,21 @@ function retrieveVar(scope, chain) {
 			if matches("sorted_by_\\w+") do
 				/* sort-funktiota ei vielä ole Rödassa, joten tämä ei toimi sitten */
 				current_val = [current_val() *| sort(key={ |e|; return e[key[10:]]})]
+				shift chain
+				continue
+			done
+			if matches("first_[0-9]+") do
+				current_val = current_val[:parseInteger(key[6:])]
+				shift chain
+				continue
+			done
+			if matches("last_[0-9]+") do
+				current_val = current_val[-parseInteger(key[5:]):]
+				shift chain
+				continue
+			done
+			if matches("reverse") do
+				current_val = reverse(current_val)
 				shift chain
 				continue
 			done
