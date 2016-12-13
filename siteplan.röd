@@ -31,14 +31,37 @@ main {
 	data["all_pages"] = []
 	
 	errprint(" [DONE]\n")
+	errprint("Initializing page classes...")
 	
-	errprint("Initializing pages...")
-	
-	pages := []
+	collectkeys := []
+	collectkeymap := new map
 	for pageclass in config["pageclasses"] do
 		classdata := loadJSON("data/"..pageclass["datafile"])
 		data[pageclass["name"]] = classdata /* sivuluokkalista: luokan sivut listana */
-		data[pageclass["name"].."_map"] = new map /* sivuluokkakartta luokan sivut karttana*/
+		data[pageclass["name"].."_map"] = new map /* sivuluokkakartta luokan sivut karttana */
+		
+		/* collectkey: tapa lisätä sivuja kokoelmiin */
+		/* kokoelma-sivuluokka määrittelee collectkeyn, joka on siis sen ominaisuuden nimi, jota käytetään sivujen lisäämisessä kokoelmiin */
+		/* jos sivulla on tämä ominaisuus, sen arvon oletetaan olevan lista, joka sisältää joukon kokoelmien nimiä */
+		if [ pageclass["collectkey"]? ] do
+			collectkeys += pageclass["collectkey"]
+			collectkeymap[pageclass["collectkey"]] = data[pageclass["name"].."_map"]
+			
+			/* lisätään jokaiselle sivuluokan sivulle lista, johon kokoelmaan sisältyvät sivut myöhemmin lisätään */
+			for page in classdata do
+				page["pages"] := []
+				
+				/* tallennetaan sivu sivuluokkakarttaan */
+				data[pageclass["name"].."_map"][page["name"]] = page
+			done
+		done
+	done
+	
+	errprint(" [DONE]\n")
+	errprint("Initializing pages...")
+	pages := []
+	for pageclass in config["pageclasses"] do
+		classdata := data[pageclass["name"]]
 		for page in classdata do
 			errprint("\rInitializing "..pageclass["name"].."/"..page["name"].."...".." "*20)
 			
@@ -57,6 +80,16 @@ main {
 			
 			/* tallennetaan sivu sivuluokkakarttaan */
 			data[pageclass["name"].."_map"][page["name"]] = page
+			
+			/* tarkistetaan, onko sivulla jonkun kokelmaan määrittelemää collectkey-ominaisuutta */
+			for collectkey in collectkeys do
+				if [ page[collectkey]? ] do
+					/* lisätään sivu kokoelmiin */
+					for collection in page[collectkey] do
+						collectkeymap[collectkey][collection]["pages"] += page
+					done
+				done
+			done
 			
 			/* tallennetaan sivu kaikkien sivujen listaan */
 			data["all_pages"] += page

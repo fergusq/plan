@@ -53,7 +53,7 @@ function lex() {
 
 function validateTokens(line_num) {
 	for token do
-		case(token) *| pull(matches, somethingElse)
+		case(token) | pull(matches, somethingElse)
 		push(new KeywordToken(line_num, token)) if matches("for|end|in|eq|block|ifdef|ifndef|if|ifn|include|\\.|\\[|\\]")
 		push(new IdentifierToken(line_num, token)) if matches("[\\wäöå]+")
 		if matches("\"") do
@@ -263,7 +263,7 @@ function interpret(scope) {
 				continue
 			done
 			if [ val is list<<Command>> ] do
-				val() *| interpret(scope)
+				val() | interpret(scope)
 				continue
 			done
 			if [ val is list ] do
@@ -285,13 +285,13 @@ function interpret(scope) {
 				key = parseInteger(key) /* TODO parempi virheenkäsittely */
 			done
 			if [ command.positive = obj[key]? ] do
-				command.body() *| interpret(scope)
+				command.body() | interpret(scope)
 			done
 			continue
 		done
 		if [ command is IfCommand ] do
-			val1 := [push(command.expr1) *| interpret(scope)]
-			val2 := [push(command.expr2) *| interpret(scope)]
+			val1 := [push(command.expr1) | interpret(scope)]
+			val2 := [push(command.expr2) | interpret(scope)]
 			cond := FALSE
 			if [ command.op = "eq" ] do
 				cond = [ val1 = val2 ]()
@@ -303,7 +303,7 @@ function interpret(scope) {
 				cond = [ val1[0] in val2[0] ]()
 			done
 			if [ command.positive = cond ] do
-				command.body() *| interpret(scope)
+				command.body() | interpret(scope)
 			done
 			continue
 		done
@@ -314,7 +314,7 @@ function interpret(scope) {
 			done
 			for val in vals do
 				scope[command.var] = val
-				command.body() *| interpret(scope)
+				command.body() | interpret(scope)
 			done
 			continue
 		done
@@ -345,13 +345,13 @@ function retrieveVar(scope, chain) {
 			done
 		done
 		if [ current_val is list ] do
-			case(key) *| pull(matches, somethingElse)
+			case(key) | pull(matches, somethingElse)
 			if matches("[0-9]+") do
 				key = parseInteger(key)
 			done
 			if matches("sorted_by_\\w+") do
 				/* sort-funktiota ei vielä ole Rödassa, joten tämä ei toimi sitten */
-				current_val = [current_val() *| sort(key={ |e|; return e[key[10:]]})]
+				current_val = [current_val() | sort(key={ |e|; return e[key[10:]]})]
 				shift chain
 				continue
 			done
@@ -373,6 +373,9 @@ function retrieveVar(scope, chain) {
 			if somethingElse do
 				error("unknown index or method: `"..key.."'")
 			done
+		done
+		unless [ current_val is map or current_val is list ] do
+			error("not a list or a map: `"..current_val.."'")
 		done
 		if [ current_val[key]? ] do
 			current_val = current_val[key]
