@@ -54,7 +54,7 @@ function lex() {
 function validateTokens(line_num) {
 	for token do
 		case(token) | pull(matches, somethingElse)
-		push(new KeywordToken(line_num, token)) if matches("for|end|in|eq|block|ifdef|ifndef|if|ifn|include|\\.|\\[|\\]")
+		push(new KeywordToken(line_num, token)) if matches("for|end|in|eq|block|with|set|ifdef|ifndef|if|ifn|include|\\.|\\[|\\]")
 		push(new IdentifierToken(line_num, token)) if matches("[\\wäöå]+")
 		if matches("\"") do
 			l := []
@@ -130,6 +130,17 @@ record BlockCommand(var, body) : Command {
 	body : list<<Command>> = body
 }
 
+record WithCommand(var, expr, body) : Command {
+	var : string = var
+	expr : Command = expr
+	body : list<<Command>> = body
+}
+
+record SetCommand(var, expr) : Command {
+	var : string = var
+	expr : Command = expr
+}
+
 record IncludeCommand(file) : Command {
 	file : string = file
 }
@@ -172,6 +183,14 @@ function parseCommand() {
 	done
 	if [ token is KeywordToken and token.val = "block" ] do
 		parseBlock()
+		return
+	done
+	if [ token is KeywordToken and token.val = "with" ] do
+		parseWith()
+		return
+	done
+	if [ token is KeywordToken and token.val = "set" ] do
+		parseSet()
 		return
 	done
 	if [ token is KeywordToken and token.val = "include" ] do
@@ -217,11 +236,9 @@ function parseIf1(positive, op) {
 }
 
 function parseIf2(positive) {
-	pull(token1)
-	expr1 := parseExpression(token1)
+	expr1 := parseExpression(pull())
 	op := expectMatch("in|eq")
-	pull(token2)
-	expr2 := parseExpression(token2)
+	expr2 := parseExpression(pull())
 	body := parseBody()
 	push(new If2Command(expr1, expr2, op, positive, body))
 }
@@ -230,6 +247,19 @@ function parseBlock() {
 	identifier(var)
 	body := parseBody()
 	push(new BlockCommand(var, body))
+}
+
+function parseWith() {
+	identifier(var)
+	expr := parseExpression(pull())
+	body := parseBody()
+	push(new WithCommand(var, expr, body))
+}
+
+function parseSet() {
+	identifier(var)
+	expr := parseExpression(pull())
+	push(new WithCommand(var, expr))
 }
 
 function parseInclude() {
@@ -341,6 +371,15 @@ function interpret(scope) {
 				command.body() | interpret(scope)
 			done
 			continue
+		done
+		if [ command is WithCommand ] do
+			previous_value := scope[command.var]
+			scope[command.var] := push(command.expr) | interpret(scope)
+			command.body() | interpret(scope)
+			scope[command.var] = previous_value
+		done
+		if [ command is SetCommand ] do
+			scope[command.var] := push(command.expr) | interpret(scope)
 		done
 		if [ command is IncludeCommand ] do
 			execPlan(command.file, scope)
