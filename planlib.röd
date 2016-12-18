@@ -54,7 +54,7 @@ function lex() {
 function validateTokens(line_num) {
 	for token do
 		case(token) | pull(matches, somethingElse)
-		push(new KeywordToken(line_num, token)) if matches("for|end|in|eq|block|with|set|ifdef|ifndef|if|ifn|include|\\.|\\[|\\]")
+		push(new KeywordToken(line_num, token)) if matches("for|end|in|eq|block|with|set|ifdef|ifndef|iflist|ifnlist|ifmap|ifnmap|ifstr|ifnstr|if|ifn|include|\\.|\\[|\\]")
 		push(new IdentifierToken(line_num, token)) if matches("[\\wäöå]+")
 		if matches("\"") do
 			l := []
@@ -259,7 +259,7 @@ function parseWith() {
 function parseSet() {
 	identifier(var)
 	expr := parseExpression(pull())
-	push(new WithCommand(var, expr))
+	push(new SetCommand(var, expr))
 }
 
 function parseInclude() {
@@ -334,10 +334,11 @@ function interpret(scope) {
 				continue
 			done
 			obj := retrieveVar(scope, command.expr.chain)
+			cond = FALSE
 			case(command.op) | pull(itIs, somethingElse)
-			cond := obj is list if itIs "list"
-			cond := obj is map if itIs "map"
-			cond := obj is string if itIs "str"
+			cond = obj is list if itIs "list"
+			cond = obj is map if itIs "map"
+			cond = obj is string if itIs "str"
 			error("unknown operator: `"..command.op.."'") if somethingElse
 			if [ command.positive = cond ] do
 				command.body() | interpret(scope)
@@ -373,10 +374,15 @@ function interpret(scope) {
 			continue
 		done
 		if [ command is WithCommand ] do
-			previous_value := scope[command.var]
-			scope[command.var] := push(command.expr) | interpret(scope)
-			command.body() | interpret(scope)
-			scope[command.var] = previous_value
+			if [ scope[command.var]? ] do
+				previous_value := scope[command.var]
+				scope[command.var] := push(command.expr) | interpret(scope)
+				command.body() | interpret(scope)
+				scope[command.var] = previous_value
+			else
+				scope[command.var] := push(command.expr) | interpret(scope)
+				command.body() | interpret(scope)
+			done
 		done
 		if [ command is SetCommand ] do
 			scope[command.var] := push(command.expr) | interpret(scope)
