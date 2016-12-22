@@ -29,7 +29,8 @@ record KeywordToken(line_num, kw) : Token {
 	val : string = kw
 }
 
-record EOFToken : Token {
+record EOFToken(line_num) : Token {
+	line_num : integer = line_num
 	val : string = "<EOF>"
 }
 
@@ -48,7 +49,7 @@ function lex() {
 		line_num ++
 		push(new StringToken(line_num, "\n"))
 	done
-	push(new EOFToken)
+	push(new EOFToken(line_num))
 }
 
 function validateTokens(line_num) {

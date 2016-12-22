@@ -68,16 +68,6 @@ main {
 			/* asetetaan pageclass-kenttä */
 			page["pageclass"] = pageclass["name"]
 			
-			/* selvitetään malline, jonka pohjalta sivu generoidaan */
-			if [ page["templatefile"]? ] do
-				push(page["templatefile"])
-			else
-				push(pageclass["templatefile"])
-			done | pull(templatefile)
-			
-			/* lasketaan sivun osoite */
-			page["path"] = if [ pageclass["dir"] != "" ] do [pageclass["dir"].."/"]; else [""]; done..page["name"]..".html"
-			
 			/* tallennetaan sivu sivuluokkakarttaan */
 			data[pageclass["name"].."_map"][page["name"]] = page
 			
@@ -94,7 +84,21 @@ main {
 			/* tallennetaan sivu kaikkien sivujen listaan */
 			data["all_pages"] += page
 			
-			pages += new Page(page["path"], page, "templates/"..templatefile)
+			/* jos sivuluokalla ei ole omaa kansiota, sitä ei ole tarkoitettu generoitavaksi */
+			if [ pageclass["dir"]? ] do
+				/* selvitetään malline, jonka pohjalta sivu generoidaan */
+				if [ page["templatefile"]? ] do
+					push(page["templatefile"])
+				else
+					push(pageclass["templatefile"])
+				done | pull(templatefile)
+				
+				/* lasketaan sivun osoite */
+				page["path"] = if [ pageclass["dir"] != "" ] do [pageclass["dir"].."/"]; else [""]; done..page["name"]..".html"
+				
+				/* lisätään sivu generoitavien sivujen listaan */
+				pages += new Page(page["path"], page, "templates/"..templatefile)
+			done
 		done
 	done
 	
