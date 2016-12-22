@@ -329,7 +329,8 @@ function interpret(scope) {
 					continue if [ #obj > 0 ]
 					key = parseInteger(key) /* TODO parempi virheenkäsittely */
 				done
-				if [ command.positive = obj[key]? ] do
+				cond := obj[key]? and (not (obj[key] is list) or #obj[key] > 0) /* tyhjät listat ovat määrittelemättömiä */
+				if [ command.positive = cond ] do
 					command.body() | interpret(scope)
 				done
 				continue
