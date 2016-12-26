@@ -21,7 +21,10 @@ record Page(path, data, template) {
 	template : string = template
 }
 
-main {
+main args... {
+	/* argumentit sisältävät niiden sivuluokkien nimet, jotka generoidaan */
+	to_be_generated := args
+
 	data := new map
 	
 	errprint("Loading JSON...")
@@ -97,7 +100,9 @@ main {
 				page["path"] = if [ pageclass["dir"] != "" ] do [pageclass["dir"].."/"]; else [""]; done..page["name"]..".html"
 				
 				/* lisätään sivu generoitavien sivujen listaan */
-				pages += new Page(page["path"], page, "templates/"..templatefile)
+				if [ #to_be_generated = 0 or pageclass["name"] in to_be_generated ] do
+					pages += new Page(page["path"], page, "templates/"..templatefile)
+				done
 			done
 		done
 	done
