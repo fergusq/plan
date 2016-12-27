@@ -165,44 +165,19 @@ function parseCommand() {
 		parseExpression(token)
 		return
 	done
-	if [ token is KeywordToken and token.val = "for" ] do
-		parseFor()
-		return
-	done
-	if [ token is KeywordToken and token.val =~ "ifn?def" ] do
-		parseIf1(token.val = "ifdef", "def")
-		return
-	done
-	if [ token is KeywordToken and token.val =~ "ifn?list" ] do
-		parseIf1(token.val = "iflist", "list")
-		return
-	done
-	if [ token is KeywordToken and token.val =~ "ifn?map" ] do
-		parseIf1(token.val = "ifmap", "map")
-		return
-	done
-	if [ token is KeywordToken and token.val =~ "ifn?str" ] do
-		parseIf1(token.val = "ifstr", "str")
-		return
-	done
-	if [ token is KeywordToken and token.val =~ "ifn?" ] do
-		parseIf2(token.val = "if")
-		return
-	done
-	if [ token is KeywordToken and token.val = "block" ] do
-		parseBlock()
-		return
-	done
-	if [ token is KeywordToken and token.val = "with" ] do
-		parseWith()
-		return
-	done
-	if [ token is KeywordToken and token.val = "set" ] do
-		parseSet()
-		return
-	done
-	if [ token is KeywordToken and token.val = "include" ] do
-		parseInclude()
+	while [ token is KeywordToken ] do
+		case(token.val) | pull(matches, somethingElse)
+		parseFor() if matches "for"
+		parseIf1(token.val = "ifdef", "def") if matches "ifn?def"
+		parseIf1(token.val = "iflist", "list") if matches "ifn?list"
+		parseIf1(token.val = "ifmap", "map") if matches "ifn?map"
+		parseIf1(token.val = "ifstr", "str") if matches "ifn?str"
+		parseIf2(token.val = "if") if matches "ifn?"
+		parseBlock() if matches "block"
+		parseWith() if matches "with"
+		parseSet() if matches "set"
+		parseInclude() if matches "include"
+		break if somethingElse
 		return
 	done
 	error("syntax error at token `"..token.val.."' (line "..token.line_num..")")
