@@ -1,10 +1,12 @@
+#!/usr/bin/env röda
+
 {
-	import "json.röd"
-	import "planlib.röd"
+	require "json"
+	require "plan"
 }
 
 function loadJSON(file) {
-	return toRödaObj(json([readLines(file)]&"\n"))
+	return jsonToRödaObj(json([readLines(file)]&"\n"))
 }
 
 function countSlashes(str) {

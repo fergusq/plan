@@ -1,11 +1,10 @@
-case x {
-	default := TRUE
-	push { |ys...|; for y in ys if [ x =~ y ] do rval := default; default = FALSE; return rval; done; return FALSE }
-	push { return default }
+post_load: {
+	export(execPlan)
 }
 
 {
-	assignGlobal("plan_cache", new map)
+	require "case"
+	plan_cache := new map
 }
 
 function execPlan(file, data) {
@@ -297,6 +296,7 @@ function interpret(scope) {
 				push(val)
 				continue
 			done
+			errprint("in chain: ", command.chain&".", "\n")
 			error("not clear what to do with this: `"..val.."'")
 		done
 		if [ command is BlockCommand ] do
@@ -388,6 +388,7 @@ function reverse(l) {
 }
 
 function retrieveVar(scope, chain) {
+	chain = chain[:]
 	current_val = scope
 	while [ #chain > 0 ] do
 		key := chain[0]
@@ -403,7 +404,6 @@ function retrieveVar(scope, chain) {
 				key = parseInteger(key)
 			done
 			if matches("sorted_by_\\w+") do
-				/* sort-funktiota ei vielä ole Rödassa, joten tämä ei toimi sitten */
 				current_val = [current_val() | sort(key={ |e|; return e[key[10:]]})]
 				shift chain
 				continue
@@ -439,28 +439,3 @@ function retrieveVar(scope, chain) {
 	done
 	return current_val
 }
-
-/* Merge sort */
-
-function sort(key=push) {
-	collect() | pull(values)
-	return *values if [ #values <= 1 ]
-	stream l1, l2
-	values[:#values//2]() | sort(key=key) | l1.push(); l1.finish()
-	values[#values//2:]() | sort(key=key) | l2.push(); l2.finish()
-	result := []
-	while [ l1.tryPeek(e1) and l2.tryPeek(e2) ] do
-		if [ key(e1) < key(e2) ] do
-			result += e1
-			l1.pull() | {}
-		else
-			result += e2
-			l2.pull() | {}
-		done
-	done
-	result += e1 while l1.tryPull(e1)
-	result += e2 while l2.tryPull(e2)
-	result()
-}
-
-function collect {a:=[];a+=_;[a]}

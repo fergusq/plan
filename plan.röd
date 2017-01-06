@@ -1,5 +1,7 @@
+#!/usr/bin/env röda
+
 {
-	import "planlib.röd"
+	require "plan"
 }
 
 main args... {
