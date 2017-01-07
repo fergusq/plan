@@ -5,7 +5,32 @@ Plan is a lightweight preprocessor and site generator.
 
 ## Dependencies
 
-Plan requires Röda 0.11 or above. It also needs the `json.röd` library distributed with the official Röda source code.
+* Röda 0.12 or above
+* `case` bil
+* `json` bil
+
+## Installation
+
+In case you'd wish not to use the Bilar system, please check the old commit
+945eebdc4545b465af769358d876967130605ba8, which contains instructions for
+installing Plan manually.
+
+The current version of plan should be installed using the Bilar system.
+The package for Plan can be downloaded from the releases section of this
+Github page.
+
+```sh
+bilar install plan.1.0.0.bil.tar.xz
+```
+
+To build the package locally, clone the repository and use Bilar to create
+an archive.
+
+```sh
+git clone https://github.com/fergusq/plan.git
+bilar compress plan
+bilar install plan.1.0.0.bil.tar.xz
+```
 
 ## Usage
 
@@ -16,7 +41,7 @@ The Plan can be used either as a preprocessor or a site generator. The executabl
 From command line:
 
 ```sh
-röda plan.röd file
+plan file
 ```
 
 The script prints the resulting text to the standard output.
@@ -26,7 +51,7 @@ From another Röda script:
 ```c
 /* imports */
 {
-	import "planlib.röd"
+	require "plan"
 }
 
 /* ... */
@@ -44,10 +69,11 @@ execPlan(file_name, variables)
 The site can be generated using the following command:
 
 ```sh
-röda siteplan.röd
+siteplan [<pageclasses>]
 ```
 
 This will generate the site according to the `data/config.json` file.
+You can optionally specify which page classes should be generated.
 
 #### Example site: a blog
 
@@ -55,10 +81,6 @@ The directory structure should look something like this:
 
 ```
 .
-|
-|-- json.röd
-|-- planlib.röd
-|-- siteplan.röd
 |
 |-- build/
 |   |-- posts/
