@@ -13,7 +13,7 @@ main args... {
 			return
 		done
 		if itIs("-v", "--version") do
-			print "plan 0.1"
+			print "plan 1.0.1"
 			return
 		done
 		if somethingElse do

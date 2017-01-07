@@ -20,7 +20,7 @@ The package for Plan can be downloaded from the releases section of this
 Github page.
 
 ```sh
-bilar install plan.1.0.0.bil.tar.xz
+bilar install plan.1.0.1.bil.tar.xz
 ```
 
 To build the package locally, clone the repository and use Bilar to create
@@ -29,7 +29,7 @@ an archive.
 ```sh
 git clone https://github.com/fergusq/plan.git
 bilar compress plan
-bilar install plan.1.0.0.bil.tar.xz
+bilar install plan.1.0.1.bil.tar.xz
 ```
 
 ## Usage
