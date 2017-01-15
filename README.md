@@ -51,7 +51,7 @@ From another Röda script:
 ```c
 /* imports */
 {
-	require "plan"
+	plan := require("plan")
 }
 
 /* ... */
@@ -61,7 +61,7 @@ file_name := "my_page.plan"
 variables := new map
 variables["title"] = "My page"
 
-execPlan(file_name, variables)
+plan.execPlan(file_name, variables)
 ```
 
 ### As a site generator
