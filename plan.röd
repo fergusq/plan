@@ -1,7 +1,8 @@
 #!/usr/bin/env röda
 
 {
-	require "plan"
+	case := require("case").case
+	plan := require("plan")
 }
 
 main args... {
@@ -13,7 +14,7 @@ main args... {
 			return
 		done
 		if itIs("-v", "--version") do
-			print "plan 1.0.1"
+			print "plan 1.0.2"
 			return
 		done
 		if somethingElse do
@@ -25,5 +26,5 @@ main args... {
 	
 	error("file not specified") if [ file = "" ]
 	
-	execPlan(file, new map)
+	plan.execPlan(file, new map)
 }

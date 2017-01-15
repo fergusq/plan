@@ -3,7 +3,7 @@ post_load: {
 }
 
 {
-	require "case"
+	case := require("case").case
 	plan_cache := new map
 }
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env röda
 
 {
-	require "json"
-	require "plan"
+	jsonlib := require("json")
+	plan := require("plan")
 }
 
 function loadJSON(file) {
-	return jsonToRödaObj(json([readLines(file)]&"\n"))
+	return jsonlib.jsonToRödaObj(json([readLines(file)]&"\n"))
 }
 
 function countSlashes(str) {
@@ -117,7 +117,7 @@ main args... {
 		
 		data["self"] = page.data
 		data["root"] = "../"*countSlashes(page.path)
-		execPlan(page.template, data) | writeStrings("build/"..page.path)
+		plan.execPlan(page.template, data) | writeStrings("build/"..page.path)
 	done
 	
 	errprint("\rGenerating pages... [DONE]".." "*20.."\n")
