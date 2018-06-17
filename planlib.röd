@@ -400,26 +400,37 @@ function retrieveVar(scope, chain) {
 		done
 		if [ current_val is list ] do
 			case(key) | pull(matches, somethingElse)
-			if matches("[0-9]+") do
+			if matches(r:"[0-9]+") do
 				key = parseInteger(key)
 			done
-			if matches("sorted_by_\\w+") do
+			if matches(r:"sorted_by_\\w+") do
 				current_val = [current_val() | sort(key={ |e|; return e[key[10:]]})]
 				shift chain
 				continue
 			done
-			if matches("first_[0-9]+") do
+			if matches(r:"first_[0-9]+") do
 				current_val = current_val[:parseInteger(key[6:])]
 				shift chain
 				continue
 			done
-			if matches("last_[0-9]+") do
+			if matches(r:"last_[0-9]+") do
 				current_val = current_val[-parseInteger(key[5:]):]
 				shift chain
 				continue
 			done
-			if matches("reverse") do
+			if matches(r:"reverse") do
 				current_val = reverse(current_val)
+				shift chain
+				continue
+			done
+			if somethingElse do
+				error("unknown index or method: `"..key.."'")
+			done
+		done
+		if [ current_val is string ] do
+			case(key) | pull(matches, somethingElse)
+			if matches(r:"interpret") do
+				current_val = push(current_val) | lex() | parse() | interpret(scope) | concat()
 				shift chain
 				continue
 			done
